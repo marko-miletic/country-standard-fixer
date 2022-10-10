@@ -12,6 +12,7 @@ fuzzywuzzy = "*"
 python-levenshtein = "*"
 pyarrow = "*"
 fastparquet = "*"
+pipfile = "*"
 
 [dev-packages]
 
