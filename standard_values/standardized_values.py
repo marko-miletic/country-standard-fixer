@@ -6,17 +6,11 @@ STANDARD_DATA_FRAME = pd.read_csv('./standard_values/iso_countries.csv')
 
 def get_countries() -> set:
     """ return -> set() structure of standard countries """
-    countries_set = set()
-    for country in STANDARD_DATA_FRAME['name']:
-        countries_set.add(country)
-    return countries_set
+    return set(STANDARD_DATA_FRAME['name'])
 
 def get_codes() -> set:
     """ return -> set() structure of standard codes """
-    codes_set = set()
-    for code in STANDARD_DATA_FRAME['alpha-3']:
-        codes_set.add(code)
-    return codes_set
+    return set(STANDARD_DATA_FRAME['alpha-3'])
 
 def get_country_code_combinations() -> dict:
     """ return -> dict(): dict['country'] = 'country code' """

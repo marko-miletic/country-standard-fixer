@@ -93,3 +93,18 @@ def test_get_country_codes1():
 def test_get_country_codes2():
     dataframe = pd.read_json("./files/test3.json")
     assert get_code_columns(dataframe, standardized_values.get_codes()) == ["name"]
+
+def test_correction():
+    countries_set = standardized_values.get_countries()
+    codes_set = standardized_values.get_codes()
+    country_code_combinations = standardized_values.get_country_code_combinations()
+
+    standard_file = pd.read_csv("./standard_values/iso_countries.csv")
+    print(standard_file)
+    input_file = pd.read_csv("./files/test1.csv")
+    correction([input_file], countries_set, codes_set, country_code_combinations)
+
+    standard_countries, input_countries = set(standard_file["name"]), set(input_file["name"])
+    standard_codes, input_codes = set(standard_file["alpha-3"]), set(input_file["alpha-3"])
+
+    assert standard_countries == input_countries and standard_codes == input_codes
