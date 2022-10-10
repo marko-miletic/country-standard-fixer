@@ -30,9 +30,9 @@ def get_country_columns(dataframe: pd.DataFrame, countries_set: set) -> list:
     print("country columns: ", target_columns_countries)
     return target_columns_countries
 
-def get_code_columns(dataframe: pd.DataFrame, codes_set: set) -> list:
+def get_code_columns_alpha3(dataframe: pd.DataFrame, alpha3_codes_set: set) -> list:
     current_df_columns = dataframe.columns.values.tolist()
-    target_columns_codes = []
+    target_columns_codes_alpha3 = []
     for column in current_df_columns:
         ### from every column in given dataframe takes random 20 entries
         ### and for each of those check if they are contained in codes_set
@@ -42,15 +42,33 @@ def get_code_columns(dataframe: pd.DataFrame, codes_set: set) -> list:
         test_counter_codes = 0
         column_length = len(dataframe[column])
         for _ in range(SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN):
-            if dataframe[column][randrange(column_length)] in codes_set:
+            if dataframe[column][randrange(column_length)] in alpha3_codes_set:
                 test_counter_codes += 1
         if test_counter_codes > THRESHOLD_FOR_MATCHING_CODE_COLUMN:
-            target_columns_codes.append(column)
-    print("code columns: ", target_columns_codes)
-    return target_columns_codes
+            target_columns_codes_alpha3.append(column)
+    print("code alpha3 columns: ", target_columns_codes_alpha3)
+    return target_columns_codes_alpha3
 
+def get_code_columns_alpha2(dataframe: pd.DataFrame, alpha2_codes_set: set) -> list:
+    current_df_columns = dataframe.columns.values.tolist()
+    target_columns_codes_alpha2 = []
+    for column in current_df_columns:
+        ### from every column in given dataframe takes random 20 entries
+        ### and for each of those check if they are contained in codes_set
+        ### for each entry contained in given sets, counter value increases
+        ### if counter value is bigger than 12 (of 20) then
+        ### given column is considered to be filled with code values
+        test_counter_codes = 0
+        column_length = len(dataframe[column])
+        for _ in range(SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN):
+            if dataframe[column][randrange(column_length)] in alpha2_codes_set:
+                test_counter_codes += 1
+        if test_counter_codes > THRESHOLD_FOR_MATCHING_CODE_COLUMN:
+            target_columns_codes_alpha2.append(column)
+    print("code alpha2 columns: ", target_columns_codes_alpha2)
+    return target_columns_codes_alpha2
 
-def correction(dataframes: list, countries_set: set, codes_set: set, combinations: dict) -> None:
+def correction(dataframes: list, countries_set: set, codes_set_alpha3: set, codes_set_alpha2: set, combinations: dict) -> None:
     """
         input -> takes dataframes and standardized data
         maps every column that contains country names or country codes to correct value
@@ -59,11 +77,14 @@ def correction(dataframes: list, countries_set: set, codes_set: set, combination
         ###iterates trough every dataframe passed
         target_columns_countries = get_country_columns(df, countries_set)
         """ columns that contain country names """
-        target_columns_codes = get_code_columns(df, codes_set)
-        """ columns that contain country codes """
+        target_columns_codes_alpha3 = get_code_columns_alpha3(df, codes_set_alpha3)
+        """ columns that contain country alpha3 codes """
+        target_columns_codes_alpha2 = get_code_columns_alpha2(df, codes_set_alpha2)
+        """ columns that contain country alpha2 codes """
 
         print('country columns: ', target_columns_countries)
-        print('codes columns: ', target_columns_codes)
+        print('codes alpha3 columns: ', target_columns_codes_alpha3)
+        print('codes alpha2 columns: ', target_columns_codes_alpha2)
 
         for column in target_columns_countries:
             ### every country value is changed to fit iso3166 standard
@@ -72,8 +93,10 @@ def correction(dataframes: list, countries_set: set, codes_set: set, combination
                 if df[column][i] not in countries_set:
                     x = process.extractOne(df[column][i], countries_set, scorer=fuzz.token_set_ratio)
                     df[column][i] = x[0]
-                for code_column in target_columns_codes:
-                    df[code_column][i] = combinations[df[column][i]]
+                for code_column in target_columns_codes_alpha3:
+                    df[code_column][i] = combinations[df[column][i]][0]
+                for code_column in target_columns_codes_alpha2:
+                    df[code_column][i] = combinations[df[column][i]][1]
 
 
 ### tests
@@ -88,23 +111,27 @@ def test_get_country_columns2():
 
 def test_get_country_codes1():
     dataframe = pd.read_csv("./files/test1.csv")
-    assert get_code_columns(dataframe, standardized_values.get_codes()) == ["alpha-3"]
+    assert get_code_columns_alpha3(dataframe, standardized_values.get_codes_alpha3()) == ["alpha-3"]
 
 def test_get_country_codes2():
     dataframe = pd.read_json("./files/test3.json")
-    assert get_code_columns(dataframe, standardized_values.get_codes()) == ["name"]
+    assert get_code_columns_alpha3(dataframe, standardized_values.get_codes_alpha3()) == ["name"]
 
 def test_correction():
     countries_set = standardized_values.get_countries()
-    codes_set = standardized_values.get_codes()
+    codes_set_alpha3 = standardized_values.get_codes_alpha3()
+    codes_set_alpha2 = standardized_values.get_codes_alpha2()
     country_code_combinations = standardized_values.get_country_code_combinations()
 
     standard_file = pd.read_csv("./standard_values/iso_countries.csv")
     print(standard_file)
     input_file = pd.read_csv("./files/test1.csv")
-    correction([input_file], countries_set, codes_set, country_code_combinations)
+    correction([input_file], countries_set, codes_set_alpha3, codes_set_alpha2, country_code_combinations)
 
     standard_countries, input_countries = set(standard_file["name"]), set(input_file["name"])
-    standard_codes, input_codes = set(standard_file["alpha-3"]), set(input_file["alpha-3"])
+    standard_codes_alpha3, input_codes_alpha3 = set(standard_file["alpha-3"]), set(input_file["alpha-3"])
+    standard_codes_alpha2, input_codes_alpha2 = set(standard_file["alpha-2"]), set(input_file["alpha-2"])
 
-    assert standard_countries == input_countries and standard_codes == input_codes
+    assert (standard_countries == input_countries and
+        standard_codes_alpha3 == input_codes_alpha3 and
+        standard_codes_alpha2 == input_codes_alpha2)
