@@ -3,6 +3,8 @@ from random import randrange
 from fuzzywuzzy import fuzz 
 from fuzzywuzzy import process
 
+from standard_values import standardized_values
+
 
 SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN = 20
 THRESHOLD_FOR_MATCHING_COUNTRY_COLUMN = 12
@@ -72,4 +74,22 @@ def correction(dataframes: list, countries_set: set, codes_set: set, combination
                     df[column][i] = x[0]
                 for code_column in target_columns_codes:
                     df[code_column][i] = combinations[df[column][i]]
-        
+
+
+### tests
+
+def test_get_country_columns1():
+    dataframe = pd.read_csv("./files/test1.csv")
+    assert get_country_columns(dataframe, standardized_values.get_countries()) == ["name"]
+
+def test_get_country_columns2():
+    dataframe = pd.read_json("./files/test3.json")
+    assert get_country_columns(dataframe, standardized_values.get_countries()) == ["id"]
+
+def test_get_country_codes1():
+    dataframe = pd.read_csv("./files/test1.csv")
+    assert get_code_columns(dataframe, standardized_values.get_codes()) == ["alpha-3"]
+
+def test_get_country_codes2():
+    dataframe = pd.read_json("./files/test3.json")
+    assert get_code_columns(dataframe, standardized_values.get_codes()) == ["name"]

@@ -31,3 +31,9 @@ def get_filenames() -> list:
     for file in os.listdir(INPUT_FILES_DIRECTORY):
         filenames.append(os.path.splitext(file)[0])
     return filenames
+
+
+### tests
+
+def test_get_filenames():
+    assert get_filenames() == ["test2", "test1", "test3"]
