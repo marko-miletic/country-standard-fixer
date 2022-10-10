@@ -1,0 +1,37 @@
+[
+    {
+      "id": "Afganistan",
+      "name": "AFG",
+      "math": 60,
+      "physics": 66,
+      "chemistry": 61
+    },
+    {
+      "id": "Åland Islands",
+      "name": "ALA",
+      "math": 89,
+      "physics": 76,
+      "chemistry": 51
+    },
+    {
+      "id": "Albania",
+      "name": "ALB",
+      "math": 79,
+      "physics": 90,
+      "chemistry": 78
+    },
+    {
+      "id": "Afghanistan",
+      "name": "AFG",
+      "math": 79,
+      "physics": 90,
+      "chemistry": 78
+    },
+    {
+      "id": "Croatia",
+      "name": "HRO",
+      "math": 79,
+      "physics": 90,
+      "chemistry": 78
+    }
+  ]
