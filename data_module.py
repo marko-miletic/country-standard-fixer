@@ -11,4 +11,4 @@ dataframes, filenames = import_files.get_dataframes(), import_files.get_filename
 
 dataframes_correction.correction(dataframes, countries_set, codes_set, country_code_combinations)
 
-export_files.export(dataframes, filenames, format="csv")
+export_files.export(dataframes, filenames, format="parquet")
