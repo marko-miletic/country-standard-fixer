@@ -5,6 +5,8 @@ from fuzzywuzzy import process
 
 from standard_values import standardized_values
 
+pd.options.mode.chained_assignment = None  # default='warn'
+
 
 SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN = 20
 THRESHOLD_FOR_MATCHING_COUNTRY_COLUMN = 12
