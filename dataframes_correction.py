@@ -92,7 +92,7 @@ def correction(dataframes: list, countries_set: set, codes_set_alpha3: set, code
             ### every country value is changed to fit iso3166 standard
             ### and every code value is changed according to country
             for i in range(len(df[column])):
-                if df[column][i] not in countries_set:
+                if df[column][i] not in countries_set and df[column][i] is not None:
                     x = process.extractOne(df[column][i], countries_set, scorer=fuzz.token_set_ratio)
                     df[column][i] = x[0]
                 for code_column in target_columns_codes_alpha3:
