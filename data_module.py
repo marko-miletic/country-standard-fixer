@@ -1,8 +1,8 @@
 import pandas as pd
 import standard_values.standardized_values as standardized_values
 import dataframes_correction
-import import_files
-import export_files
+from file_operations import import_files
+from file_operations import export_files
 
 
 pd.options.mode.chained_assignment = None  # default='warn'

@@ -11,7 +11,6 @@ def get_dataframes() -> list:
         return -> list of created dataframes
     """
     dataframes = []
-    # TO DO: Replace with magic function :)
     for file in os.listdir(INPUT_FILES_DIRECTORY):
         full_path = os.path.join(INPUT_FILES_DIRECTORY, file)
         file_extension = os.path.splitext(file)[1]
@@ -27,7 +26,6 @@ def get_filenames() -> list:
         return -> list of extracted file names
     """
     filenames = []
-    # TO DO: Replace with regex matching 
     for file in os.listdir(INPUT_FILES_DIRECTORY):
         filenames.append(os.path.splitext(file)[0])
     return filenames
