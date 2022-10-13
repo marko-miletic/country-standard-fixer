@@ -23,4 +23,3 @@ def get_country_code_combinations() -> dict:
         combinations[STANDARD_DATA_FRAME['name'][i]] = (
             STANDARD_DATA_FRAME['alpha-3'][i], STANDARD_DATA_FRAME['alpha-2'][i])
     return combinations
-    
