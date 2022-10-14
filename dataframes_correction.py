@@ -12,6 +12,8 @@ SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN = 20
 THRESHOLD_FOR_MATCHING_COUNTRY_COLUMN = 12
 THRESHOLD_FOR_MATCHING_CODE_COLUMN = 8
 
+MISSING_INSTANCE_VALUES = set([np.NaN, None, ''])
+
 
 def get_country_columns(dataframe: pd.DataFrame, countries_set: set) -> list:
     current_df_columns = dataframe.columns.values.tolist()
@@ -93,7 +95,7 @@ def correction(dataframes: list, countries_set: set, codes_set_alpha3: set, code
             ### every country value is changed to fit iso3166 standard
             ### and every code value is changed according to country
             for i in range(len(df[column])):
-                if df[column][i] is np.NaN or df[column][i] is None:
+                if df[column][i] in MISSING_INSTANCE_VALUES:
                     ### case when value in country column is not defined
                     ### other columns in that same row are examined for
                     ### standardized codes that can be used to determine
@@ -118,7 +120,7 @@ def correction(dataframes: list, countries_set: set, codes_set_alpha3: set, code
                                     df[column][i] = country
                                     country_value_updated = True
                                     break
-                if df[column][i] is not np.NaN or df[column][i] is not None:
+                if df[column][i] not in MISSING_INSTANCE_VALUES:
                     if df[column][i] not in countries_set:
                         x = process.extractOne(df[column][i], countries_set, scorer=fuzz.token_set_ratio)
                         df[column][i] = x[0]
