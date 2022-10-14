@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from random import randrange
 from fuzzywuzzy import fuzz 
 from fuzzywuzzy import process
@@ -86,15 +87,42 @@ def correction(dataframes: list, countries_set: set, codes_set_alpha3: set, code
         print('country columns: ', target_columns_countries)
         print('codes alpha3 columns: ', target_columns_codes_alpha3)
         print('codes alpha2 columns: ', target_columns_codes_alpha2)
+        print(df)
 
         for column in target_columns_countries:
             ### every country value is changed to fit iso3166 standard
             ### and every code value is changed according to country
             for i in range(len(df[column])):
-                if df[column][i] not in countries_set and df[column][i] is not None:
-                    x = process.extractOne(df[column][i], countries_set, scorer=fuzz.token_set_ratio)
-                    df[column][i] = x[0]
-                for code_column in target_columns_codes_alpha3:
-                    df[code_column][i] = combinations[df[column][i]][0]
-                for code_column in target_columns_codes_alpha2:
-                    df[code_column][i] = combinations[df[column][i]][1]
+                if df[column][i] is np.NaN or df[column][i] is None:
+                    ### case when value in country column is not defined
+                    ### other columns in that same row are examined for
+                    ### standardized codes that can be used to determine
+                    ### exact country name
+                    country_value_updated = False
+                    ### bool value that is used to break iterations after country has been found
+                    for code3_column in target_columns_codes_alpha3:
+                        if country_value_updated is True:
+                            break
+                        if df[code3_column][i] in codes_set_alpha3:
+                            for country in combinations:
+                                if df[code3_column][i] == combinations[country][0]:
+                                    df[column][i] = country
+                                    country_value_updated = True
+                                    break
+                    for code2_column in target_columns_codes_alpha2:
+                        if country_value_updated is True:
+                            break
+                        if df[code2_column][i] in codes_set_alpha2:
+                            for country in combinations:
+                                if df[code2_column][i] == combinations[country][1]:
+                                    df[column][i] = country
+                                    country_value_updated = True
+                                    break
+                if df[column][i] is not np.NaN or df[column][i] is not None:
+                    if df[column][i] not in countries_set:
+                        x = process.extractOne(df[column][i], countries_set, scorer=fuzz.token_set_ratio)
+                        df[column][i] = x[0]
+                    for code_column in target_columns_codes_alpha3:
+                        df[code_column][i] = combinations[df[column][i]][0]
+                    for code_column in target_columns_codes_alpha2:
+                        df[code_column][i] = combinations[df[column][i]][1]
