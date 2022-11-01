@@ -1,29 +1,31 @@
 import pandas as pd
 import numpy as np
 from random import randrange
-from fuzzywuzzy import fuzz 
+from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
-
-
-pd.options.mode.chained_assignment = None  # default='warn'
 
 
 SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN = 20
 THRESHOLD_FOR_MATCHING_COUNTRY_COLUMN = 12
 THRESHOLD_FOR_MATCHING_CODE_COLUMN = 8
 
-MISSING_INSTANCE_VALUES = set([np.NaN, None, ''])
+MISSING_INSTANCE_VALUES = {np.NaN, None, ''}
 
 
-def get_country_columns(dataframe: pd.DataFrame, countries_set: set) -> list:
+pd.options.mode.chained_assignment = None  # default='warn'
+
+
+def get_country_columns(dataframe: pd.DataFrame, countries_set: set[str]) -> list[str]:
     current_df_columns = dataframe.columns.values.tolist()
     target_columns_countries = []
     for column in current_df_columns:
-        ### from every column in given dataframe takes random 20 entries
-        ### and for each of those check if they are contained in countries_set
-        ### for each entry contained in given sets, counter value increases
-        ### if counter value is bigger than 12 (of 20) then
-        ### given column is considered to be filled with country values
+        """
+            from every column in given dataframe takes random 20 entries
+            and for each of those check if they are contained in countries_set
+            for each entry contained in given sets, counter value increases
+            if counter value is bigger than 12 (of 20) then
+            given column is considered to be filled with country values
+        """
         test_counter_countries = 0
         column_length = len(dataframe[column])
         for _ in range(SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN):
@@ -33,15 +35,18 @@ def get_country_columns(dataframe: pd.DataFrame, countries_set: set) -> list:
             target_columns_countries.append(column)
     return target_columns_countries
 
-def get_code_columns_alpha3(dataframe: pd.DataFrame, alpha3_codes_set: set) -> list:
+
+def get_code_columns_alpha3(dataframe: pd.DataFrame, alpha3_codes_set: set[str]) -> list[str]:
     current_df_columns = dataframe.columns.values.tolist()
     target_columns_codes_alpha3 = []
     for column in current_df_columns:
-        ### from every column in given dataframe takes random 20 entries
-        ### and for each of those check if they are contained in codes_set
-        ### for each entry contained in given sets, counter value increases
-        ### if counter value is bigger than 12 (of 20) then
-        ### given column is considered to be filled with code values
+        """
+            from every column in given dataframe takes random 20 entries
+            and for each of those check if they are contained in codes_set
+            for each entry contained in given sets, counter value increases
+            if counter value is bigger than 12 (of 20) then
+            given column is considered to be filled with code values
+        """
         test_counter_codes = 0
         column_length = len(dataframe[column])
         for _ in range(SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN):
@@ -51,15 +56,18 @@ def get_code_columns_alpha3(dataframe: pd.DataFrame, alpha3_codes_set: set) -> l
             target_columns_codes_alpha3.append(column)
     return target_columns_codes_alpha3
 
-def get_code_columns_alpha2(dataframe: pd.DataFrame, alpha2_codes_set: set) -> list:
+
+def get_code_columns_alpha2(dataframe: pd.DataFrame, alpha2_codes_set: set[str]) -> list[str]:
     current_df_columns = dataframe.columns.values.tolist()
     target_columns_codes_alpha2 = []
     for column in current_df_columns:
-        ### from every column in given dataframe takes random 20 entries
-        ### and for each of those check if they are contained in codes_set
-        ### for each entry contained in given sets, counter value increases
-        ### if counter value is bigger than 12 (of 20) then
-        ### given column is considered to be filled with code values
+        """
+            from every column in given dataframe takes random 20 entries
+            and for each of those check if they are contained in codes_set
+            for each entry contained in given sets, counter value increases
+            if counter value is bigger than 12 (of 20) then
+            given column is considered to be filled with code values
+        """
         test_counter_codes = 0
         column_length = len(dataframe[column])
         for _ in range(SAMPLE_SIZE_FOR_MATCHING_COUNTRY_CODE_COLUMN):
@@ -69,30 +77,36 @@ def get_code_columns_alpha2(dataframe: pd.DataFrame, alpha2_codes_set: set) -> l
             target_columns_codes_alpha2.append(column)
     return target_columns_codes_alpha2
 
-def correction(dataframe: list, countries_set: set, codes_set_alpha3: set, codes_set_alpha2: set, combinations: dict) -> None:
+
+def correction(
+        dataframe: pd.DataFrame,
+        countries_set: set[str],
+        codes_set_alpha3: set[str],
+        codes_set_alpha2: set[str],
+        combinations: dict) -> None:
     """
         input -> takes dataframes and standardized data
         maps every column that contains country names or country codes to correct value
     """
-
     target_columns_countries = get_country_columns(dataframe, countries_set)
-    """ columns that contain country names """
     target_columns_codes_alpha3 = get_code_columns_alpha3(dataframe, codes_set_alpha3)
-    """ columns that contain country alpha3 codes """
     target_columns_codes_alpha2 = get_code_columns_alpha2(dataframe, codes_set_alpha2)
-    """ columns that contain country alpha2 codes """
 
     for column in target_columns_countries:
-        ### every country value is changed to fit iso3166 standard
-        ### and every code value is changed according to country
+        """
+            every country value is changed to fit iso3166 standard
+            and every code value is changed according to country
+        """
         for i in range(len(dataframe[column])):
             if dataframe[column][i] in MISSING_INSTANCE_VALUES:
-                ### case when value in country column is not defined
-                ### other columns in that same row are examined for
-                ### standardized codes that can be used to determine
-                ### exact country name
+                """
+                    case when value in country column is not defined
+                    other columns in that same row are examined for
+                    standardized codes that can be used to determine
+                    exact country name
+                """
                 country_value_updated = False
-                ### bool value that is used to break iterations after country has been found
+                # bool value that is used to break iterations after country has been found
                 for code3_column in target_columns_codes_alpha3:
                     if country_value_updated is True:
                         break
@@ -111,6 +125,7 @@ def correction(dataframe: list, countries_set: set, codes_set_alpha3: set, codes
                                 dataframe[column][i] = country
                                 country_value_updated = True
                                 break
+
             if dataframe[column][i] not in MISSING_INSTANCE_VALUES:
                 if dataframe[column][i] not in countries_set:
                     x = process.extractOne(dataframe[column][i], countries_set, scorer=fuzz.token_set_ratio)
@@ -119,4 +134,3 @@ def correction(dataframe: list, countries_set: set, codes_set_alpha3: set, codes
                     dataframe[code_column][i] = combinations[dataframe[column][i]][0]
                 for code_column in target_columns_codes_alpha2:
                     dataframe[code_column][i] = combinations[dataframe[column][i]][1]
-    print(dataframe)
